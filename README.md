@@ -3,6 +3,7 @@
 This is Isaac Kuk's submission for the Roche RVA Specialist Coding Assessment. For Questions 1 and 2, the folders contain both an R script to generate the desired output, as well as an example of the output file. For Question 3, the folder contains the entire Shiny app.
 
 ## Repo structure
+```
 ├── question_1
 │   ├── question_1.R
 │   └── sample_output_1.html
@@ -11,6 +12,7 @@ This is Isaac Kuk's submission for the Roche RVA Specialist Coding Assessment. F
 │   └── sample_output_2.png
 ├── question_3
 │   └── question_3.R
+```
 
 ## Required R packages:
 - `pharmaverseadam`
@@ -52,7 +54,7 @@ loaded via a namespace (and not attached):
 [16] cli_3.6.5          rlang_1.1.7        withr_3.0.2        cachem_1.1.0       otel_0.2.0        
 [21] tools_4.5.2        tzdb_0.5.0         memoise_2.0.1      httpuv_1.6.16      vctrs_0.7.1       
 [26] R6_2.6.1           mime_0.13          lifecycle_1.0.5    ragg_1.5.1         pkgconfig_2.0.3
-```
 [31] pillar_1.11.1      bslib_0.10.0       later_1.4.8        gtable_0.3.6       glue_1.8.0        
 [36] Rcpp_1.1.1         systemfonts_1.3.2  tidyselect_1.2.1   rstudioapi_0.18.0  farver_2.1.2      
-[41] xtable_1.8-8       htmltools_0.5.9    labeling_0.4.3     compiler_4.5.2     S7_0.2.1  
+[41] xtable_1.8-8       htmltools_0.5.9    labeling_0.4.3     compiler_4.5.2     S7_0.2.1
+```
