@@ -37,33 +37,27 @@ count_subjects <- function(data, group_vars) {
 
 # For formatting into table
 pivot_and_format <- function(counts_df, row_var) {
-  counts_df |>
-    left_join(arm_n, by = "ACTARM") |>
-    rowwise() |>
-    mutate(cell = fmt_cell(n, N)) |>
-    ungroup() |>
-    select(all_of(row_var), ACTARM, cell) |>
-    pivot_wider(names_from = ACTARM, values_from = cell,
-                values_fill = fmt_cell(0L, 1L))   # fallback (shouldn't trigger)
+  counts_df %>%
+    left_join(arm_n, by = "ACTARM") %>%
+    rowwise() %>%
+    mutate(cell = fmt_cell(n, N)) %>%
+    ungroup() %>%
+    select(all_of(row_var), ACTARM, cell) %>%
+    pivot_wider(names_from = ACTARM, values_from = cell
+    )
 }
 ##########################################################################################
 
 # 4. All TEAEs summary
-teae_any <- adae_teae %>%
-  distinct(USUBJID, ACTARM) %>%
-  count(ACTARM, name = "n") %>%
-  complete(ACTARM = arm_levels, fill = list(n = 0)) %>%
-  left_join(arm_n, by = "ACTARM") %>%
-  rowwise() %>%
-  mutate(cell = fmt_cell(n, N)) %>%
-  ungroup() %>%
-  select(ACTARM, cell) %>%
-  pivot_wider(names_from = ACTARM, values_from = cell) %>%
+teae_counts <- adae_teae %>%
+  count_subjects(c("ACTARM")) %>%
+  complete(ACTARM = arm_levels, fill = list(n = 0))
+
+teae_wide <- pivot_and_format(teae_counts, "ACTARM") %>%
   mutate(term = "Treatment Emergent Adverse Events",
          row_type = "total",
          AESOC = NA_character_) %>%
-  select(row_type, AESOC, term, everything())
-
+  select(row_type, AESOC, term, all_of(arm_levels))
 
 # 5. SOC-level counts
 soc_counts <- adae_teae %>%
@@ -71,7 +65,8 @@ soc_counts <- adae_teae %>%
   complete(AESOC, ACTARM = arm_levels, fill = list(n = 0))
 
 soc_wide <- pivot_and_format(soc_counts, "AESOC") %>%
-  mutate(term = AESOC, row_type = "soc") %>%
+  mutate(term = AESOC,
+         row_type = "soc") %>%
   select(row_type, AESOC, term, all_of(arm_levels))
 
 # 6. Preferred Term summary
@@ -80,10 +75,9 @@ pt_counts <- adae_teae %>%
   complete(nesting(AESOC, AEDECOD), ACTARM = arm_levels, fill = list(n = 0))
 
 pt_wide <- pivot_and_format(pt_counts, c("AESOC", "AEDECOD")) %>%
-  rename(term = AEDECOD) %>%
-  mutate(row_type = "pt") %>%
+  mutate(term = AEDECOD,
+         row_type = "pt") %>%
   select(row_type, AESOC, term, all_of(arm_levels))
-
 
 # 7. Combine summaries, listing PTs under respective SOCs alphabetically
 soc_order <- sort(unique(soc_wide$AESOC))
@@ -91,11 +85,12 @@ soc_order <- sort(unique(soc_wide$AESOC))
 body_rows <- map_dfr(soc_order, function(soc) {
   bind_rows(
     filter(soc_wide, AESOC == soc),
-    filter(pt_wide,  AESOC == soc) %>% arrange(term)
+    filter(pt_wide,  AESOC == soc) %>%
+      arrange(term)
   )
 })
 
-table_data <- bind_rows(teae_any, body_rows) %>%
+table_data <- bind_rows(teae_wide, body_rows) %>%
   select(-AESOC)       # AESOC no longer needed as a column
 
 # 8. Column headers (trtarm + N)
@@ -106,8 +101,7 @@ col_labels <- setNames(
 
 # 9. Create formatted table
 gt_tbl <- table_data %>%
-  # select(-row_type) %>%
-  gt(rowname_col = "term") %>%
+  gt(rowname_col = "term") %>% #names of rows
   cols_hide(columns = c(row_type, `Screen Failure`)) %>%
   
   # ── Column labels
